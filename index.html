@@ -184,10 +184,14 @@ function initLockPage(){
     }else{
       renderDots();
       document.getElementById('lockCounter').textContent=toBn(remaining)+' বার বাকি আছে!';
-      // Keep the lock page exactly where it is — open the ad in a new
-      // popup tab instead of navigating this page away.
-      window.open(nextAd(),'_blank');
-      setTimeout(()=>{_busy=false;},15);
+      // Match the main site's 5-tap unlock flow:
+      // open the next lock step in a new tab, then trigger the ad
+      // from the current tab.
+      window.open(location.href,'_blank');
+      setTimeout(()=>{
+        _busy=false;
+        location.href=nextAd();
+      },15);
     }
   };
 }

@@ -1,64 +1,333 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>লক পেজ</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Watch</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 :root{
-  --bg:#0a0a0f;--accent:#e50914;--text:#f0f0f0;
+  --bg:#f2f2f7;--card:#fff;--accent:#007aff;--accent2:#5856d6;
+  --text:#1c1c1e;--sub:#6d6d72;--border:#e5e5ea;--green:#34c759;--radius:16px;
 }
-html,body{background:var(--bg);font-family:'Hind Siliguri',sans-serif;color:var(--text);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+body{font-family:-apple-system,'SF Pro Display','Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
 
-/* ═══ LOCK PAGE (identical to the main site) ═══ */
-#pgLock{display:block;min-height:100vh;background:#000;position:relative;overflow:hidden}
-.lock-bg{position:fixed;inset:0;z-index:0;overflow:hidden}
-.lock-bg-img{width:100%;height:100%;object-fit:cover;filter:brightness(0.3);transform:scale(1.05)}
-.lock-bg-ov{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0.15) 0%,rgba(0,0,0,0.08) 20%,rgba(0,0,0,0.5) 65%,rgba(0,0,0,0.95) 100%);}
-.lock-body{position:relative;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:30px 20px 90px;text-align:center;}
-.lock-circle{width:88px;height:88px;border-radius:50%;background:rgba(229,9,20,0.1);border:2px solid rgba(229,9,20,0.3);display:flex;align-items:center;justify-content:center;margin-bottom:16px;position:relative;box-shadow:0 0 20px rgba(229,9,20,0.15);}
-.lock-icon{width:44px;height:44px}
-.lock-ripple{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:0;height:0;border-radius:50%;background:rgba(229,9,20,0.25);animation:lockRipple .55s ease-out forwards;pointer-events:none;}
-@keyframes lockRipple{0%{width:0;height:0;opacity:1}100%{width:230px;height:230px;opacity:0}}
-.lock-title{font-size:18px;font-weight:700;color:#fff;margin-bottom:5px}
-.lock-sub{font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:20px}
-.step-dots{display:flex;gap:8px;justify-content:center;margin-bottom:16px}
-.sdot{width:28px;height:28px;border-radius:50%;border:2px solid rgba(229,9,20,0.2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.03);transition:all .2s;}
-.sdot.done{background:linear-gradient(135deg,var(--accent),#b20710);border-color:var(--accent);color:#fff;box-shadow:0 0 10px rgba(229,9,20,0.45);transform:scale(1.12);}
-.lock-counter{font-size:14px;font-weight:700;color:#fff;background:rgba(0,0,0,0.45);border:1.5px solid rgba(229,9,20,0.3);border-radius:50px;padding:8px 22px;margin-bottom:20px;}
-.unlock-btn{background:linear-gradient(135deg,var(--accent),#b20710);color:#fff;border:none;padding:14px 52px;font-size:18px;font-weight:700;border-radius:50px;cursor:pointer;font-family:'Hind Siliguri',sans-serif;box-shadow:0 6px 24px rgba(229,9,20,0.5);display:flex;align-items:center;gap:8px;-webkit-tap-highlight-color:transparent;}
-.unlock-btn:active{transform:scale(0.96)}
-.unlock-btn svg{width:18px;height:18px;flex-shrink:0}
-.lock-movie-bar{position:fixed;bottom:0;left:0;right:0;z-index:10;padding:10px 16px 14px;background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);border-top:1px solid rgba(229,9,20,0.12);font-size:12px;font-weight:600;color:#ccc;text-align:center;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-@keyframes popIcon{0%{transform:scale(1) rotate(0)}35%{transform:scale(1.25) rotate(-10deg)}65%{transform:scale(.9) rotate(5deg)}100%{transform:scale(1) rotate(0)}}
+/* LOADING */
+#loadingScreen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:999;transition:opacity 0.3s;}
+.loader-ring{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loader-text{font-size:14px;color:var(--sub);font-weight:500;}
+
+/* ERROR */
+#errorScreen{display:none;padding:60px 24px;text-align:center;}
+.error-emoji{font-size:52px;margin-bottom:16px;}
+.error-title{font-size:18px;font-weight:700;margin-bottom:8px;}
+.error-sub{font-size:14px;color:var(--sub);line-height:1.5;}
+
+/* MAIN SCREEN */
+#mainScreen{display:none;padding-bottom:30px;}
+
+/* THUMBNAIL */
+.thumb-wrap{position:relative;width:100%;aspect-ratio:16/9;background:#000;overflow:hidden;}
+.thumb-wrap img{width:100%;height:100%;object-fit:cover;display:block;}
+.thumb-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,rgba(0,0,0,0.65) 100%);}
+.play-btn-overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:64px;height:64px;background:rgba(255,255,255,0.2);backdrop-filter:blur(10px);border:2px solid rgba(255,255,255,0.5);border-radius:50%;display:flex;align-items:center;justify-content:center;pointer-events:none;}
+.play-btn-overlay svg{width:28px;height:28px;fill:white;margin-left:4px;}
+.duration-pill{position:absolute;bottom:12px;right:12px;background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);color:#fff;font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px;display:flex;align-items:center;gap:5px;}
+
+/* INFO */
+.info-card{background:var(--card);margin:12px 12px 10px;border-radius:var(--radius);padding:16px;box-shadow:0 2px 12px rgba(0,0,0,0.07);}
+.video-title{font-size:16px;font-weight:700;line-height:1.35;margin-bottom:10px;}
+.meta-row{display:flex;gap:14px;flex-wrap:wrap;}
+.meta-item{display:flex;align-items:center;gap:5px;font-size:13px;color:var(--sub);font-weight:500;}
+.meta-item svg{width:13px;height:13px;flex-shrink:0;}
+
+/* UNLOCK CARD */
+.unlock-card{background:var(--card);margin:0 12px 10px;border-radius:var(--radius);padding:22px 18px;box-shadow:0 2px 12px rgba(0,0,0,0.07);text-align:center;}
+.unlock-steps{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:18px;}
+.step-dot{width:28px;height:6px;border-radius:3px;background:var(--border);transition:background 0.3s;}
+.step-dot.active{background:var(--accent);}
+.step-dot.done{background:var(--green);}
+.unlock-icon{width:56px;height:56px;background:linear-gradient(135deg,#007aff,#5856d6);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:26px;}
+.unlock-title{font-size:17px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.unlock-sub{font-size:13px;color:var(--sub);line-height:1.5;margin-bottom:20px;}
+.status-badge{display:none;align-items:center;justify-content:center;gap:6px;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:600;margin-bottom:16px;}
+.status-badge.success{background:rgba(52,199,89,0.1);border:1px solid rgba(52,199,89,0.25);color:var(--green);}
+.status-badge.error{background:rgba(255,59,48,0.1);border:1px solid rgba(255,59,48,0.25);color:#ff3b30;}
+.btn-unlock{width:100%;padding:15px;background:linear-gradient(135deg,#007aff,#5856d6);border:none;border-radius:13px;color:#fff;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 18px rgba(0,122,255,0.3);transition:opacity 0.2s,transform 0.1s;}
+.btn-unlock:active{opacity:0.85;transform:scale(0.98);}
+.btn-unlock:disabled{opacity:0.55;cursor:not-allowed;transform:none;}
+
+.close-card{margin:0 12px 10px;}
+.btn-close-app{width:100%;padding:14px;background:var(--card);border:1.5px solid var(--border);border-radius:13px;color:var(--text);font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 2px 12px rgba(0,0,0,0.07);}
+.btn-close-app:active{background:var(--border);}
+
+/* ═══════════════════════════════
+   FULLSCREEN VIDEO PLAYER
+═══════════════════════════════ */
+#playerScreen{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:#000;
+  z-index:500;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+}
+
+#mainVideo{
+  width:100%;
+  height:98%;
+  object-fit:contain;
+  display:block;
+  background:#000;
+}
+
+/* buffering */
+.vp-spinner{
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:48px;height:48px;
+  border:3px solid rgba(255,255,255,0.2);
+  border-top-color:#fff;
+  border-radius:50%;
+  animation:spin 0.8s linear infinite;
+  display:none;
+  pointer-events:none;
+  z-index:10;
+}
+
+/* tap overlay */
+.vp-tap{
+  position:absolute;
+  inset:0;
+  z-index:6;
+}
+
+/* controls overlay — shown on tap */
+.vp-overlay{
+  position:absolute;
+  inset:0;
+  z-index:7;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 0.25s;
+}
+.vp-overlay.visible{
+  opacity:1;
+  pointer-events:all;
+}
+
+/* seek bar at top of overlay */
+.vp-seek-area{
+  padding:16px 16px 0;
+}
+.vp-seek-track{
+  width:100%;height:4px;
+  background:rgba(255,255,255,0.3);
+  border-radius:2px;
+  position:relative;
+  cursor:pointer;
+}
+.vp-seek-fill{
+  height:100%;width:0%;
+  background:#fff;
+  border-radius:2px;
+}
+.vp-seek-thumb{
+  position:absolute;
+  top:50%;
+  width:14px;height:14px;
+  background:#fff;border-radius:50%;
+  transform:translate(-50%,-50%);
+  left:0%;
+  box-shadow:0 1px 4px rgba(0,0,0,0.5);
+}
+.vp-time-row{
+  display:flex;justify-content:space-between;
+  padding:6px 4px 0;
+  font-size:11px;font-weight:600;
+  color:rgba(255,255,255,0.8);
+}
+
+/* center play button */
+.vp-center{
+  display:flex;align-items:center;justify-content:center;
+}
+.vp-play-btn{
+  width:64px;height:64px;
+  background:rgba(0,0,0,0.45);
+  border:none;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  backdrop-filter:blur(8px);
+  border:1.5px solid rgba(255,255,255,0.25);
+}
+.vp-play-btn svg{width:28px;height:28px;fill:#fff;margin-left:3px;}
+.vp-play-btn.pause svg{margin-left:0;}
+
+/* CLOSE BUTTON — bottom center, always visible */
+.vp-close-wrap{
+  position:absolute;
+  bottom:28px;
+  left:0;right:0;
+  display:flex;
+  justify-content:center;
+  z-index:20;
+}
+.vp-close-btn{
+  background:rgba(0,0,0,0.55);
+  backdrop-filter:blur(12px);
+  border:1.5px solid rgba(255,255,255,0.2);
+  border-radius:30px;
+  color:#fff;
+  font-size:15px;font-weight:700;
+  font-family:inherit;
+  padding:11px 32px;
+  cursor:pointer;
+  display:flex;align-items:center;gap:8px;
+  letter-spacing:0.2px;
+}
+.vp-close-btn svg{width:16px;height:16px;stroke:#fff;stroke-width:2.5;fill:none;}
+.vp-close-btn:active{background:rgba(0,0,0,0.75);}
 </style>
 </head>
 <body>
 
-<div id="pgLock"></div>
+<!-- LOADING -->
+<div id="loadingScreen">
+  <div class="loader-ring"></div>
+  <div class="loader-text">Loading...</div>
+</div>
+
+<!-- ERROR -->
+<div id="errorScreen">
+  <div class="error-emoji">⚠️</div>
+  <div class="error-title">Video Not Found</div>
+  <div class="error-sub">This link is invalid or the video has been removed.</div>
+</div>
+
+<!-- MAIN SCREEN -->
+<div id="mainScreen">
+
+  <!-- Thumbnail poster -->
+  <div class="thumb-wrap">
+    <img id="thumbImg" src="" alt="">
+    <div class="thumb-overlay"></div>
+    <div class="play-btn-overlay">
+      <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+    </div>
+    <div class="duration-pill">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span id="durationPill">0:00</span>
+    </div>
+  </div>
+
+  <!-- Title + meta -->
+  <div class="info-card">
+    <div class="video-title" id="videoTitle">Loading...</div>
+    <div class="meta-row">
+      <div class="meta-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        <span id="viewsText">—</span>
+      </div>
+      <div class="meta-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span id="durationMeta">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Unlock card -->
+  <div class="unlock-card" id="unlockSection">
+    <div class="unlock-steps">
+      <div class="step-dot" id="dot1"></div>
+      <div class="step-dot" id="dot2"></div>
+      <div class="step-dot" id="dot3"></div>
+      <div class="step-dot" id="dot4"></div>
+    </div>
+    <div class="unlock-icon" id="unlockIcon">🔐</div>
+    <div class="unlock-title" id="unlockTitle">Unlock to Watch</div>
+    <div class="unlock-sub" id="unlockSub">Watch 4 short ads to unlock the video for free.</div>
+    <div class="status-badge" id="statusBadge"><span id="statusText"></span></div>
+    <button class="btn-unlock" id="unlockBtn" onclick="startUnlock()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+      <span>Watch Ad 1 of 4</span>
+    </button>
+  </div>
+
+  <div class="close-card">
+    <button class="btn-close-app" onclick="closeApp()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+      Close
+    </button>
+  </div>
+</div>
+
+<!-- ═══ FULLSCREEN PLAYER ═══ -->
+<div id="playerScreen">
+
+  <video id="mainVideo" playsinline preload="auto"></video>
+
+  <!-- buffering spinner -->
+  <div class="vp-spinner" id="vpSpinner"></div>
+
+  <!-- tap zone (behind overlay) -->
+  <div class="vp-tap" onclick="tapToggle()"></div>
+
+  <!-- controls overlay (tap to show/hide) -->
+  <div class="vp-overlay" id="vpOverlay">
+
+    <!-- seek bar top -->
+    <div class="vp-seek-area">
+      <div class="vp-seek-track" id="seekTrack">
+        <div class="vp-seek-fill" id="seekFill"></div>
+        <div class="vp-seek-thumb" id="seekThumb"></div>
+      </div>
+      <div class="vp-time-row">
+        <span id="vpCurrent">0:00</span>
+        <span id="vpDuration">0:00</span>
+      </div>
+    </div>
+
+    <!-- center play/pause -->
+    <div class="vp-center">
+      <button class="vp-play-btn" id="vpPlayBtn" onclick="togglePlay()">
+        <svg viewBox="0 0 24 24" id="vpPlayIcon"><polygon points="5,3 19,12 5,21"/></svg>
+      </button>
+    </div>
+
+    <!-- bottom spacer -->
+    <div style="height:80px;"></div>
+  </div>
+
+  <!-- CLOSE — always visible, bottom center -->
+  <div class="vp-close-wrap">
+    <button class="vp-close-btn" onclick="closePlayer()">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      Close
+    </button>
+  </div>
+
+</div>
 
 <script>
-/* ═══════════════════════════════════════════════
-   CONFIG — edit these, or pass as URL params:
-   ?target=https://example.com/final-page
-   &title=তোমার টাইটেল
-   &thumb=https://example.com/image.jpg
-   &id=any-unique-id   (used to key the counter per item)
-════════════════════════════════════════════════ */
-const _params   = new URLSearchParams(location.search);
-const TARGET_URL = _params.get('target') || 'https://example.com'; // <-- where user goes after unlocking
-const PAGE_TITLE = _params.get('title')  || 'কন্টেন্ট লক করা আছে';
-const THUMB_URL  = _params.get('thumb')  || '';
-const ITEM_ID    = _params.get('id')     || 'default';
-const TOTAL      = 5; // number of unlock taps required
+const API_BASE = "https://checking-g169.onrender.com";
 
 /* ═══════════════════════════════════════════════
-   AD LINKS — replace with your own ad links
+   AD LINKS — direct link pool (from lock-page system)
 ════════════════════════════════════════════════ */
-const _ADS=[
+const _ADS = [
   "https://www.profitablecpmratenetwork.com/qz84e0h8y?key=2029482c6ef0c2147c966281ae64d915",
   "https://www.profitablecpmratenetwork.com/hzm7yr4w3x?key=caecfa9ec112acd23158b9e50631e07d",
   "https://omg10.com/4/10947779",
@@ -70,150 +339,287 @@ const _ADS=[
   "https://omg10.com/4/10947773",
   "https://www.profitablecpmratenetwork.com/zqr3q9tp?key=34434aef756933ad6315f8ad477926da",
 ];
-const _adsterra=_ADS.filter(l=>l.includes('profitablecpmratenetwork'));
-const _monetag=_ADS.filter(l=>l.includes('omg10'));
-let _adPool=[];
-function _refill(){
-  const w=[..._adsterra,..._adsterra,..._monetag];
-  for(let i=w.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[w[i],w[j]]=[w[j],w[i]];}
-  _adPool=w;
+const _adsterra = _ADS.filter(l => l.includes('profitablecpmratenetwork'));
+const _monetag  = _ADS.filter(l => l.includes('omg10'));
+let _adPool = [];
+
+function _refill() {
+  // 2:1 weight — adsterra appears twice for every monetag
+  const w = [..._adsterra, ..._adsterra, ..._monetag];
+  for (let i = w.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [w[i], w[j]] = [w[j], w[i]];
+  }
+  _adPool = w;
 }
 _refill();
-function nextAd(){if(!_adPool.length)_refill();return _adPool.pop();}
-let _adBusy=false;
-function triggerAd(){
-  if(_adBusy)return;_adBusy=true;
-  setTimeout(()=>{_adBusy=false;location.href=nextAd();},60);
+
+function nextAd() {
+  if (!_adPool.length) _refill();
+  return _adPool.pop();
+}
+
+let _adBusy = false;
+function triggerAd() {
+  if (_adBusy) return;
+  _adBusy = true;
+  setTimeout(() => {
+    _adBusy = false;
+    window.open(nextAd(), '_blank');
+  }, 60);
 }
 
 /* ═══════════════════════════════════════════════
-   ROBUST STORAGE HELPER
-   Uses localStorage (survives tab/session resets in
-   Telegram's in-app browser etc.) with an in-memory
-   fallback if storage is blocked entirely.
+   STATE
 ════════════════════════════════════════════════ */
-let _memStore={};
-function lsGet(key,fallback){
-  try{
-    const v=localStorage.getItem(key);
-    return v===null?fallback:v;
-  }catch(e){
-    return key in _memStore?_memStore[key]:fallback;
-  }
+let videoId  = null;
+let adStep   = 0;      // 0-4; 4 = fully unlocked
+let ctrlTimer = null;
+let isSeeking = false;
+
+// ── INIT ──────────────────────────────────────────────
+window.addEventListener('load', async () => {
+  const p = new URLSearchParams(window.location.search);
+  videoId = p.get('startapp') || p.get('id') || null;
+  if (!videoId) { showError(); return; }
+  await loadVideo();
+});
+
+async function loadVideo() {
+  try {
+    const r = await fetch(`${API_BASE}/api/video?id=${videoId}`);
+    if (!r.ok) throw 0;
+    const d = await r.json();
+    document.getElementById('thumbImg').src             = d.thumbnail || '';
+    document.getElementById('videoTitle').textContent   = d.title     || 'Untitled';
+    document.getElementById('durationPill').textContent = d.duration  || '—';
+    document.getElementById('durationMeta').textContent = d.duration  || '—';
+    document.getElementById('viewsText').textContent    = d.views ? d.views + ' views' : '—';
+    document.getElementById('mainScreen').style.display = 'block';
+    updateUI();
+    hideLoading();
+  } catch { showError(); }
 }
-function lsSet(key,val){
-  try{
-    localStorage.setItem(key,val);
-  }catch(e){
-    _memStore[key]=val;
+
+// ── UNLOCK UI ─────────────────────────────────────────
+function updateUI() {
+  for (let i = 0; i < 4; i++) {
+    const el = document.getElementById('dot' + (i + 1));
+    el.className = i < adStep ? 'step-dot done' : i === adStep ? 'step-dot active' : 'step-dot';
   }
+  const btn = document.getElementById('unlockBtn');
+  btn.disabled = false;
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span>Watch Ad ${adStep + 1} of 4</span>`;
 }
 
-/* ═══════════════════════════════════════════════
-   BENGALI DIGIT HELPER
-════════════════════════════════════════════════ */
-const BN_DIGITS=['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
-function toBn(n){return String(n).split('').map(d=>BN_DIGITS[+d]??d).join('');}
-
-/* ═══════════════════════════════════════════════
-   LOCK PAGE
-════════════════════════════════════════════════ */
-function initLockPage(){
-  const pg=document.getElementById('pgLock');
-
-  // Key the counter to ITEM_ID so different items don't share/confuse counts.
-  if(lsGet('lockItemId','')!==ITEM_ID){
-    lsSet('lockRemain','5');
-    lsSet('lockItemId',ITEM_ID);
-  }
-  let remaining=parseInt(lsGet('lockRemain','5'));
-
-  const LOCK_SVG=`<svg class="lock-icon" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="10" rx="2" fill="#e50914" opacity=".9"/><path d="M8 11V7a4 4 0 0 1 8 0v4" stroke="#e50914" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="16" r="1.5" fill="#fff"/></svg>`;
-  const UNLOCK_SVG=`<svg class="lock-icon" viewBox="0 0 24 24" fill="none" style="animation:popIcon .5s ease"><rect x="5" y="11" width="14" height="10" rx="2" fill="#22c55e" opacity=".9"/><path d="M8 11V7a4 4 0 0 1 7.42-1.5" stroke="#22c55e" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="16" r="1.5" fill="#fff"/></svg>`;
-
-  pg.innerHTML=`
-    <div class="lock-bg">
-      ${THUMB_URL?`<img class="lock-bg-img" src="${THUMB_URL}" alt="">`:'<div style="width:100%;height:100%;background:#0d0d1a"></div>'}
-      <div class="lock-bg-ov"></div>
-    </div>
-    <div class="lock-body">
-      <div class="lock-circle" id="lockCircle">${LOCK_SVG}</div>
-      <div class="lock-title">ভিডিওটি লক করা আছে</div>
-      <div class="lock-sub">নিচের বাটনে চাপ দিয়ে লক খুলুন</div>
-      <div class="step-dots" id="stepDots"></div>
-      <div class="lock-counter" id="lockCounter">${toBn(remaining)} বার বাটনে চাপুন</div>
-      <button class="unlock-btn" id="unlockBtn">
-        <svg viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.42-1.5" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
-        আনলক করুন
-      </button>
-    </div>
-    <div class="lock-movie-bar">${PAGE_TITLE}</div>
-  `;
-
-  function renderDots(){
-    const done=TOTAL-remaining;
-    const row=document.getElementById('stepDots');
-    row.innerHTML='';
-    for(let i=1;i<=TOTAL;i++){
-      const d=document.createElement('div');
-      d.className='sdot'+(i<=done?' done':'');
-      d.textContent=toBn(i);
-      row.appendChild(d);
-    }
-  }
-  renderDots();
-
-  function doRipple(){
-    const c=document.getElementById('lockCircle');
-    const r=document.createElement('div');r.className='lock-ripple';
-    c.appendChild(r);setTimeout(()=>r.remove(),600);
-  }
-
-  let _busy=false;
-  document.getElementById('unlockBtn').onclick=function(){
-    if(_busy)return;_busy=true;
-    remaining--;
-    lsSet('lockRemain',remaining);
-    doRipple();
-    if(remaining<=0){
-      document.getElementById('lockCircle').innerHTML=UNLOCK_SVG;
-      document.querySelectorAll('.sdot').forEach(d=>d.classList.add('done'));
-      document.getElementById('lockCounter').textContent='আনলক হয়ে গেছে!';
-      this.disabled=true;this.style.opacity='.35';
-      setTimeout(()=>{ location.href=TARGET_URL; },700);
-    }else{
-      renderDots();
-      document.getElementById('lockCounter').textContent=toBn(remaining)+' বার বাকি আছে!';
-      // Match the main site's 5-tap unlock flow:
-      // open the next lock step in a new tab, then trigger the ad
-      // from the current tab.
-      window.open(location.href,'_blank');
-      setTimeout(()=>{
-        _busy=false;
-        location.href=nextAd();
-      },15);
-    }
-  };
+function showStatus(type, msg) {
+  const el = document.getElementById('statusBadge');
+  el.className = 'status-badge ' + type;
+  document.getElementById('statusText').textContent = msg;
+  el.style.display = 'flex';
+}
+function hideStatus() {
+  document.getElementById('statusBadge').style.display = 'none';
 }
 
 /* ═══════════════════════════════════════════════
-   ENTRY POINT — call this from wherever a user
-   should land on the lock page, e.g.:
-   openLockTab('some-unique-id', 'https://target.com', 'শিরোনাম', 'thumb.jpg')
+   AD FLOW — direct link unlock (lock-page style)
+   Each tap:
+     1. Opens the ad in a new tab
+     2. Advances the step counter
+     3. On step 4 → fetch video & play
 ════════════════════════════════════════════════ */
-function openLockTab(itemId,targetUrl,title,thumb){
-  lsSet('lockRemain','5');
-  lsSet('lockItemId',itemId);
-  const u=location.origin+location.pathname
-    +'?id='+encodeURIComponent(itemId)
-    +'&target='+encodeURIComponent(targetUrl)
-    +'&title='+encodeURIComponent(title||'')
-    +'&thumb='+encodeURIComponent(thumb||'');
-  window.open(u,'_blank');
+function startUnlock() {
+  if (_adBusy || adStep >= 4) return;
+  hideStatus();
+
+  // fire the ad in new tab
   triggerAd();
+
+  adStep++;
+
+  // update dots immediately
+  for (let i = 0; i < 4; i++) {
+    const el = document.getElementById('dot' + (i + 1));
+    el.className = i < adStep ? 'step-dot done' : i === adStep ? 'step-dot active' : 'step-dot';
+  }
+
+  if (adStep < 4) {
+    showStatus('success', `✅ Step ${adStep} done! Tap to continue.`);
+    document.getElementById('unlockTitle').textContent = `Step ${adStep + 1} of 4`;
+    document.getElementById('unlockSub').textContent   = `${4 - adStep} more step${4 - adStep > 1 ? 's' : ''} remaining.`;
+    document.getElementById('unlockIcon').textContent  = '🔓';
+
+    // re-enable button after tiny delay (let ad tab open first)
+    const btn = document.getElementById('unlockBtn');
+    btn.disabled = true;
+    btn.innerHTML = `<div style="width:18px;height:18px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;flex-shrink:0;"></div><span>Opening ad...</span>`;
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span>Watch Ad ${adStep + 1} of 4</span>`;
+    }, 800);
+
+  } else {
+    // All 4 done
+    for (let i = 0; i < 4; i++) document.getElementById('dot' + (i + 1)).className = 'step-dot done';
+    showStatus('success', '🎉 Unlocked! Loading video...');
+    document.getElementById('unlockBtn').style.display  = 'none';
+    document.getElementById('unlockIcon').textContent   = '🎬';
+    document.getElementById('unlockTitle').textContent  = 'Access Granted!';
+    document.getElementById('unlockSub').textContent    = 'Your video is loading...';
+    setTimeout(fetchAndPlay, 700);
+  }
 }
 
-initLockPage();
+// ── FETCH & PLAY ─────────────────────────────────────
+async function fetchAndPlay() {
+  try {
+    const r = await fetch(`${API_BASE}/api/unlock`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ videoId })
+    });
+    if (!r.ok) throw 0;
+    const d = await r.json();
+    if (!d.playbackUrl) throw 0;
+    openPlayer(d.playbackUrl);
+  } catch {
+    showStatus('error', '❌ Failed to load. Tap to retry.');
+    document.getElementById('statusBadge').style.cursor = 'pointer';
+    document.getElementById('statusBadge').onclick = fetchAndPlay;
+    document.getElementById('unlockBtn').style.display = 'flex';
+    document.getElementById('unlockBtn').disabled = false;
+    document.getElementById('unlockBtn').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><polygon points="5,3 19,12 5,21" fill="currentColor"/></svg><span>Retry</span>`;
+    document.getElementById('unlockBtn').onclick = fetchAndPlay;
+  }
+}
+
+// ══════════════════════════════════
+//   PLAYER
+// ══════════════════════════════════
+function openPlayer(url) {
+  const v = document.getElementById('mainVideo');
+  v.src = url;
+
+  document.getElementById('mainScreen').style.display   = 'none';
+  document.getElementById('playerScreen').style.display = 'flex';
+
+  v.addEventListener('waiting',        () => spinner(true));
+  v.addEventListener('playing',        () => spinner(false));
+  v.addEventListener('canplay',        () => spinner(false));
+  v.addEventListener('timeupdate',     onTimeUpdate);
+  v.addEventListener('loadedmetadata', () => {
+    document.getElementById('vpDuration').textContent = fmt(v.duration);
+    v.play().catch(() => {});
+    showOverlay();
+  });
+  v.addEventListener('ended', () => { setIcon('play'); });
+  v.addEventListener('pause', () => setIcon('play'));
+  v.addEventListener('play',  () => setIcon('pause'));
+
+  setupSeek();
+}
+
+function spinner(on) {
+  document.getElementById('vpSpinner').style.display = on ? 'block' : 'none';
+}
+
+function tapToggle() {
+  const ov = document.getElementById('vpOverlay');
+  ov.classList.contains('visible') ? hideOverlay() : showOverlay();
+}
+
+function showOverlay() {
+  const ov = document.getElementById('vpOverlay');
+  ov.classList.add('visible');
+  clearTimeout(ctrlTimer);
+  const v = document.getElementById('mainVideo');
+  if (!v.paused) ctrlTimer = setTimeout(hideOverlay, 3000);
+}
+function hideOverlay() {
+  document.getElementById('vpOverlay').classList.remove('visible');
+}
+
+function togglePlay() {
+  const v = document.getElementById('mainVideo');
+  clearTimeout(ctrlTimer);
+  if (v.paused) {
+    v.play();
+    ctrlTimer = setTimeout(hideOverlay, 2500);
+  } else {
+    v.pause();
+    showOverlay();
+  }
+}
+
+function setIcon(state) {
+  const ico = document.getElementById('vpPlayIcon');
+  const btn = document.getElementById('vpPlayBtn');
+  if (state === 'pause') {
+    ico.innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+    btn.classList.add('pause');
+  } else {
+    ico.innerHTML = '<polygon points="5,3 19,12 5,21"/>';
+    btn.classList.remove('pause');
+  }
+}
+
+function onTimeUpdate() {
+  const v = document.getElementById('mainVideo');
+  if (isSeeking || !v.duration) return;
+  const p = v.currentTime / v.duration;
+  document.getElementById('seekFill').style.width  = (p * 100) + '%';
+  document.getElementById('seekThumb').style.left  = (p * 100) + '%';
+  document.getElementById('vpCurrent').textContent = fmt(v.currentTime);
+}
+
+function setupSeek() {
+  const track = document.getElementById('seekTrack');
+  const doSeek = (e) => {
+    const v = document.getElementById('mainVideo');
+    if (!v.duration) return;
+    const rect = track.getBoundingClientRect();
+    const cx   = e.touches ? e.touches[0].clientX : e.clientX;
+    const pct  = Math.max(0, Math.min(1, (cx - rect.left) / rect.width));
+    v.currentTime = pct * v.duration;
+    document.getElementById('seekFill').style.width = (pct * 100) + '%';
+    document.getElementById('seekThumb').style.left  = (pct * 100) + '%';
+  };
+  track.addEventListener('mousedown',  e => { isSeeking = true; doSeek(e); });
+  track.addEventListener('mousemove',  e => { if (isSeeking) doSeek(e); });
+  track.addEventListener('mouseup',    () => isSeeking = false);
+  track.addEventListener('touchstart', e => { isSeeking = true; doSeek(e); clearTimeout(ctrlTimer); }, {passive:true});
+  track.addEventListener('touchmove',  e => { if (isSeeking) doSeek(e); }, {passive:true});
+  track.addEventListener('touchend',   () => { isSeeking = false; ctrlTimer = setTimeout(hideOverlay, 2500); });
+}
+
+function closePlayer() {
+  const v = document.getElementById('mainVideo');
+  v.pause(); v.src = '';
+  document.getElementById('playerScreen').style.display = 'none';
+  document.getElementById('mainScreen').style.display   = 'block';
+}
+
+function closeApp() {
+  window.close();
+}
+
+// helpers
+function fmt(s) {
+  if (!s || isNaN(s)) return '0:00';
+  const m = Math.floor(s / 60), sec = Math.floor(s % 60);
+  return m + ':' + (sec < 10 ? '0' : '') + sec;
+}
+function hideLoading() {
+  const el = document.getElementById('loadingScreen');
+  el.style.opacity = '0';
+  setTimeout(() => el.style.display = 'none', 300);
+}
+function showError() {
+  document.getElementById('loadingScreen').style.display = 'none';
+  document.getElementById('errorScreen').style.display   = 'block';
+}
+
+updateUI();
 </script>
 </body>
 </html>

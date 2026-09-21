@@ -279,32 +279,6 @@ body{min-height:100svh;overflow-x:hidden;padding-top:env(safe-area-inset-top,0);
 .p-back svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2.5;}
 /* mobile: show on touch */
 .p-back.visible{opacity:1;}
-
-/* PROFESSIONAL INLINE VIDEO PREVIEW */
-.thumb-wrap.preview-ready{background:#07060d;overflow:hidden}
-.preview-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;background:#050509;z-index:2}
-.preview-video.show{display:block}
-.preview-shade{position:absolute;inset:0;z-index:3;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.06),rgba(0,0,0,.58));opacity:0;transition:opacity .35s}
-.preview-shade.show{opacity:1}
-.preview-topbar{position:absolute;top:12px;left:12px;z-index:7;display:none;align-items:center;gap:7px;padding:7px 10px;border-radius:999px;background:rgba(10,8,18,.62);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(12px);color:#fff;font-size:11px;font-weight:800;letter-spacing:.08em}
-.preview-topbar.show{display:flex}
-.preview-live-dot{width:6px;height:6px;border-radius:50%;background:#a855f7;box-shadow:0 0 12px rgba(168,85,247,.9);animation:pvPulse 1.4s infinite}
-.preview-lock{position:absolute;inset:0;z-index:8;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:24px;opacity:0;pointer-events:none;background:rgba(5,4,10,.5);backdrop-filter:blur(3px);transition:opacity .4s}
-.preview-lock.show{opacity:1;pointer-events:auto}
-.preview-lock-ring{width:68px;height:68px;border-radius:50%;display:grid;place-items:center;position:relative;margin-bottom:13px;background:linear-gradient(145deg,#7c3aed,#a855f7);box-shadow:0 0 0 1px rgba(255,255,255,.16),0 12px 45px rgba(124,58,237,.5);animation:pvFloat 2.4s ease-in-out infinite}
-.preview-lock-ring:before{content:"";position:absolute;inset:-7px;border-radius:50%;border:1px solid rgba(168,85,247,.38);animation:pvRing 2s ease-out infinite}
-.preview-lock svg{width:30px;height:30px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.preview-lock-title{font-size:16px;font-weight:900;color:#fff}
-.preview-lock-sub{margin-top:5px;font-size:12px;color:rgba(255,255,255,.72);max-width:270px}
-.preview-progress{position:absolute;left:12px;right:12px;bottom:12px;height:4px;border-radius:99px;z-index:9;background:rgba(255,255,255,.16);overflow:hidden;opacity:0;transition:opacity .25s}
-.preview-progress.show{opacity:1}
-.preview-progress-fill{height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,#7c3aed,#c084fc);box-shadow:0 0 14px rgba(168,85,247,.65)}
-.preview-label{position:absolute;right:12px;top:12px;z-index:7;display:none;padding:6px 9px;border-radius:8px;background:rgba(10,8,18,.62);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.9);font-size:10px;font-weight:900;letter-spacing:.1em}
-.preview-label.show{display:block}
-@keyframes pvPulse{50%{opacity:.35;transform:scale(.72)}}
-@keyframes pvFloat{50%{transform:translateY(-4px)}}
-@keyframes pvRing{0%{transform:scale(.8);opacity:.9}100%{transform:scale(1.45);opacity:0}}
-
 </style>
 </head>
 <body>
@@ -331,28 +305,34 @@ body{min-height:100svh;overflow-x:hidden;padding-top:env(safe-area-inset-top,0);
   <!-- THUMBNAIL -->
   <div class="thumb-shell">
     <div class="thumb-wrap">
-      <img id="thumbImg" src="" alt="Video thumbnail">
-      <video id="previewVideo" class="preview-video" muted playsinline preload="metadata"></video>
-      <div id="previewShade" class="preview-shade"></div>
-      <div id="previewTopbar" class="preview-topbar"><span class="preview-live-dot"></span> PREVIEW</div>
-      <div id="previewLabel" class="preview-label">3 SEC PREVIEW</div>
-      <div id="previewLock" class="preview-lock">
-        <div class="preview-lock-ring">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <rect x="5" y="10" width="14" height="10" rx="2"></rect>
-            <path d="M8 10V7a4 4 0 0 1 8 0v3"></path>
-            <path d="M12 14v3"></path>
-          </svg>
+      <img id="thumbImg" src="" alt="Thumbnail">
+      <div class="thumb-vig"></div>
+      <div class="play-center">
+        <div class="play-disc">
+          <svg viewBox="0 0 24 24"><polygon points="6,3 20,12 6,21"/></svg>
         </div>
-        <div class="preview-lock-title">Preview ended</div>
-        <div class="preview-lock-sub">Unlock below to continue watching the full video</div>
       </div>
-      <div id="previewProgress" class="preview-progress"><div id="previewProgressFill" class="preview-progress-fill"></div></div>
-      <div class="thumb-vignette"></div>
-      <button id="thumbPlay" class="play-disc" aria-label="Play preview">▶</button>
-      <div id="durationPill" class="duration-pill">—</div>
+      <div class="dur-pill" id="durationPill">—</div>
     </div>
-    <div class="unlock-card" id="unlockSection">
+  </div>
+
+  <!-- INFO -->
+  <div class="info-card">
+    <div class="vid-title" id="videoTitle">Loading…</div>
+    <div class="meta-row">
+      <div class="meta-item">
+        <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        <span id="viewsText">—</span>
+      </div>
+      <div class="meta-item">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span id="durationMeta">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- UNLOCK CARD -->
+  <div class="unlock-card" id="unlockSection">
     <div class="pip-row" id="pipRow"></div>
     <div class="u-icon" id="unlockIcon">🔐</div>
     <div class="u-title" id="unlockTitle">Unlock to Watch</div>
@@ -380,7 +360,7 @@ body{min-height:100svh;overflow-x:hidden;padding-top:env(safe-area-inset-top,0);
 <!-- PLAYER — full screen overlay -->
 <div id="playerScreen">
   <video id="mainVideo" controls playsinline preload="auto"
-         controlsList="nodownload"
+         controlsList="nodownload nofullscreen" disablePictureInPicture
          oncontextmenu="return false"></video>
   <button class="p-back" id="pBackBtn">
     <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
@@ -425,8 +405,6 @@ function lsSet(k, v) { try { localStorage.setItem(k, v); } catch { _mem[k] = v; 
 
 /* ── STATE ─────────────────────────────── */
 let videoId = null, taps = 0, _busy = false;
-let previewStarted = false, previewLocked = false;
-const PREVIEW_SECONDS = 3;
 
 /* ── INIT ─────────────────────────────── */
 window.addEventListener('load', async () => {
@@ -448,7 +426,6 @@ async function loadVideo() {
     document.getElementById('durationPill').textContent= d.duration  || '—';
     document.getElementById('durationMeta').textContent= d.duration  || '—';
     document.getElementById('viewsText').textContent   = d.views ? fmtViews(d.views) : '—';
-    setupProfessionalPreview(d);
 
     if (taps >= TOTAL) {
       renderPips(); hideLoading();
@@ -466,89 +443,6 @@ function fmtViews(n) {
   if (num >= 1e6)  return (num / 1e6).toFixed(1) + 'M views';
   if (num >= 1000) return (num / 1000).toFixed(1) + 'K views';
   return num + ' views';
-}
-
-
-/* ── PROFESSIONAL INLINE PREVIEW ───────────── */
-function setupProfessionalPreview(d) {
-  const v = document.getElementById('previewVideo');
-  const img = document.getElementById('thumbImg');
-  const wrap = document.querySelector('.thumb-wrap');
-  if (!v || !wrap) return;
-
-  // IMPORTANT: this uses the same MP4 URL already supplied by the existing API.
-  // No new endpoint and no change to the existing unlock flow.
-  const url = d.videoUrl || d.playbackUrl || d.url || '';
-  if (!url) return;
-
-  wrap.classList.add('preview-ready');
-  v.src = url;
-  v.load();
-
-  document.getElementById('thumbPlay').onclick = function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    startProfessionalPreview();
-  };
-
-  v.addEventListener('timeupdate', function() {
-    if (!previewStarted || previewLocked) return;
-    const current = Math.min(v.currentTime || 0, PREVIEW_SECONDS);
-    document.getElementById('previewProgressFill').style.width =
-      ((current / PREVIEW_SECONDS) * 100) + '%';
-    if (current >= PREVIEW_SECONDS - 0.03) lockProfessionalPreview();
-  });
-
-  v.addEventListener('ended', lockProfessionalPreview);
-
-  v.addEventListener('error', function() {
-    if (!previewStarted) {
-      v.classList.remove('show');
-      document.getElementById('previewShade').classList.remove('show');
-      document.getElementById('previewTopbar').classList.remove('show');
-      document.getElementById('previewLabel').classList.remove('show');
-      document.getElementById('previewProgress').classList.remove('show');
-      img.style.display = '';
-    }
-  });
-}
-
-function startProfessionalPreview() {
-  if (previewStarted || previewLocked) return;
-  const v = document.getElementById('previewVideo');
-  if (!v || !v.src) return;
-
-  previewStarted = true;
-  document.getElementById('thumbImg').style.display = 'none';
-  document.getElementById('thumbPlay').style.display = 'none';
-  v.classList.add('show');
-  document.getElementById('previewShade').classList.add('show');
-  document.getElementById('previewTopbar').classList.add('show');
-  document.getElementById('previewLabel').classList.add('show');
-  document.getElementById('previewProgress').classList.add('show');
-
-  try { v.currentTime = 0; } catch (_) {}
-  v.muted = true;
-  const p = v.play();
-  if (p && p.catch) p.catch(function(){});
-}
-
-function lockProfessionalPreview() {
-  if (previewLocked) return;
-  previewLocked = true;
-  const v = document.getElementById('previewVideo');
-  try { v.pause(); } catch (_) {}
-  const fill = document.getElementById('previewProgressFill');
-  if (fill) fill.style.width = '100%';
-
-  document.getElementById('previewLock').classList.add('show');
-  document.getElementById('previewLabel').classList.remove('show');
-  document.getElementById('previewTopbar').classList.remove('show');
-
-  setTimeout(function() {
-    const btn = document.getElementById('unlockBtn');
-    if (btn) btn.scrollIntoView({behavior:'smooth', block:'center'});
-  }, 220);
 }
 
 /* ── PIPS ─────────────────────────────── */

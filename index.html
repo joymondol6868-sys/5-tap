@@ -2,124 +2,354 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Watch</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+
 :root{
-  --bg:#f2f2f7;--card:#fff;--accent:#007aff;--accent2:#5856d6;
-  --text:#1c1c1e;--sub:#6d6d72;--border:#e5e5ea;--green:#34c759;--radius:16px;
+  --bg:#08080f;
+  --s1:#0f0f1a;
+  --s2:#15152a;
+  --acc:#7c3aed;
+  --acc2:#a855f7;
+  --acc-glow:rgba(124,58,237,.38);
+  --text:#f0efff;
+  --muted:#5c5c80;
+  --sub:#9090b8;
+  --border:rgba(255,255,255,.06);
+  --border2:rgba(255,255,255,.1);
+  --green:#10b981;
+  --red:#ef4444;
+  --r:20px;
 }
-body{font-family:-apple-system,'SF Pro Display','Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+html{background:var(--bg);color:var(--text);font-family:-apple-system,'SF Pro Display','Segoe UI',system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+body{min-height:100svh;overflow-x:hidden;padding-top:env(safe-area-inset-top,0);padding-bottom:env(safe-area-inset-bottom,0);}
 
-#loadingScreen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:999;transition:opacity 0.3s;}
-.loader-ring{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
-.loader-text{font-size:14px;color:var(--sub);font-weight:500;}
+/* ── LOADING ───────────────────────────────────────────── */
+#loadingScreen{
+  position:fixed;inset:0;z-index:9999;background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+  transition:opacity .5s ease;
+}
+.ld-logo{
+  width:64px;height:64px;border-radius:20px;
+  background:linear-gradient(135deg,var(--acc),var(--acc2));
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 0 0 var(--acc-glow);
+  animation:lp 2s ease-in-out infinite;
+}
+.ld-logo svg{width:30px;height:30px;fill:#fff;}
+@keyframes lp{
+  0%,100%{box-shadow:0 0 0 0 var(--acc-glow);transform:scale(1);}
+  50%{box-shadow:0 0 0 16px rgba(124,58,237,0);transform:scale(1.06);}
+}
+.ld-bar-wrap{width:110px;height:2px;background:var(--border2);border-radius:1px;overflow:hidden;}
+.ld-bar{height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));border-radius:1px;animation:lbar 1.6s ease-in-out infinite;}
+@keyframes lbar{0%{width:0%;margin-left:0%;}60%{width:80%;margin-left:20%;}100%{width:0%;margin-left:120%;}}
+.ld-txt{font-size:13px;color:var(--muted);letter-spacing:.5px;font-weight:500;}
 
-#errorScreen{display:none;padding:60px 24px;text-align:center;}
-.error-emoji{font-size:52px;margin-bottom:16px;}
-.error-title{font-size:18px;font-weight:700;margin-bottom:8px;}
-.error-sub{font-size:14px;color:var(--sub);line-height:1.5;}
+/* ── ERROR ───────────────────────────────────────────── */
+#errorScreen{display:none;min-height:100svh;padding:64px 24px;text-align:center;flex-direction:column;align-items:center;justify-content:center;}
+.er-icon{font-size:60px;margin-bottom:20px;}
+.er-title{font-size:20px;font-weight:800;margin-bottom:8px;}
+.er-sub{font-size:14px;color:var(--sub);line-height:1.65;max-width:260px;}
 
-#mainScreen{display:none;padding-bottom:30px;}
+/* ── MAIN SCREEN ───────────────────────────────────────────── */
+#mainScreen{
+  display:none;
+  padding-bottom:calc(28px + env(safe-area-inset-bottom,0px));
+  animation:fadeup .45s ease both;
+}
+@keyframes fadeup{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
 
-.thumb-wrap{position:relative;width:100%;aspect-ratio:16/9;background:#000;overflow:hidden;}
-.thumb-wrap img{width:100%;height:100%;object-fit:cover;display:block;}
-.thumb-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,rgba(0,0,0,0.65) 100%);}
-.play-btn-overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:64px;height:64px;background:rgba(255,255,255,0.2);backdrop-filter:blur(10px);border:2px solid rgba(255,255,255,0.5);border-radius:50%;display:flex;align-items:center;justify-content:center;pointer-events:none;}
-.play-btn-overlay svg{width:28px;height:28px;fill:white;margin-left:4px;}
-.duration-pill{position:absolute;bottom:12px;right:12px;background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);color:#fff;font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px;display:flex;align-items:center;gap:5px;}
+/* THUMBNAIL */
+.thumb-shell{position:relative;width:100%;background:#000;}
+.thumb-wrap{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;}
+.thumb-wrap img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s ease;}
+.thumb-vig{
+  position:absolute;inset:0;
+  background:linear-gradient(to bottom,rgba(0,0,0,.1) 0%,rgba(0,0,0,0) 30%,rgba(0,0,0,.55) 100%);
+  pointer-events:none;
+}
+/* play button */
+.play-center{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  pointer-events:none;
+  display:flex;align-items:center;justify-content:center;
+}
+.play-disc{
+  width:78px;height:78px;border-radius:50%;
+  background:rgba(255,255,255,.14);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:2px solid rgba(255,255,255,.28);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+  box-shadow:0 8px 40px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.2);
+}
+.play-disc::before{
+  content:'';position:absolute;inset:-7px;border-radius:50%;
+  border:1.5px solid rgba(255,255,255,.15);
+  animation:pr1 2.8s ease-out infinite;
+}
+.play-disc::after{
+  content:'';position:absolute;inset:-16px;border-radius:50%;
+  border:1px solid rgba(255,255,255,.07);
+  animation:pr1 2.8s ease-out infinite .55s;
+}
+@keyframes pr1{0%{transform:scale(1);opacity:.7;}100%{transform:scale(1.55);opacity:0;}}
+.play-disc svg{width:30px;height:30px;fill:#fff;margin-left:5px;filter:drop-shadow(0 2px 8px rgba(0,0,0,.4));}
+/* duration pill */
+.dur-pill{
+  position:absolute;bottom:10px;right:10px;
+  background:rgba(0,0,0,.72);
+  color:#fff;font-size:11px;font-weight:700;
+  padding:4px 9px;border-radius:5px;letter-spacing:.2px;
+  font-variant-numeric:tabular-nums;
+}
 
-.info-card{background:var(--card);margin:12px 12px 10px;border-radius:var(--radius);padding:16px;box-shadow:0 2px 12px rgba(0,0,0,0.07);}
-.video-title{font-size:16px;font-weight:700;line-height:1.35;margin-bottom:10px;}
-.meta-row{display:flex;gap:14px;flex-wrap:wrap;}
-.meta-item{display:flex;align-items:center;gap:5px;font-size:13px;color:var(--sub);font-weight:500;}
-.meta-item svg{width:13px;height:13px;flex-shrink:0;}
+/* INFO CARD */
+.info-card{
+  background:var(--s1);
+  padding:15px 16px 13px;
+  border-bottom:1px solid var(--border);
+}
+.vid-title{font-size:15px;font-weight:700;line-height:1.42;color:var(--text);margin-bottom:10px;}
+.meta-row{display:flex;gap:18px;align-items:center;}
+.meta-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--sub);font-weight:500;}
+.meta-item svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0;}
 
-.unlock-card{background:var(--card);margin:0 12px 10px;border-radius:var(--radius);padding:22px 18px;box-shadow:0 2px 12px rgba(0,0,0,0.07);text-align:center;}
-.unlock-steps{display:flex;align-items:center;justify-content:center;gap:5px;margin-bottom:18px;flex-wrap:wrap;}
-.step-dot{width:22px;height:6px;border-radius:3px;background:var(--border);transition:background 0.3s;}
-.step-dot.active{background:var(--accent);}
-.step-dot.done{background:var(--green);}
-.unlock-icon{width:56px;height:56px;background:linear-gradient(135deg,#007aff,#5856d6);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:26px;}
-.unlock-title{font-size:17px;font-weight:700;color:var(--text);margin-bottom:6px;}
-.unlock-sub{font-size:13px;color:var(--sub);line-height:1.5;margin-bottom:20px;}
-.status-badge{display:none;align-items:center;justify-content:center;gap:6px;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:600;margin-bottom:16px;}
-.status-badge.success{background:rgba(52,199,89,0.1);border:1px solid rgba(52,199,89,0.25);color:var(--green);}
-.status-badge.error{background:rgba(255,59,48,0.1);border:1px solid rgba(255,59,48,0.25);color:#ff3b30;}
-.btn-unlock{width:100%;padding:15px;background:linear-gradient(135deg,#007aff,#5856d6);border:none;border-radius:13px;color:#fff;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 18px rgba(0,122,255,0.3);transition:opacity 0.2s,transform 0.1s;}
-.btn-unlock:active{opacity:0.85;transform:scale(0.98);}
-.btn-unlock:disabled{opacity:0.55;cursor:not-allowed;transform:none;}
+/* UNLOCK CARD */
+.unlock-card{
+  margin:14px 14px 10px;
+  background:var(--s1);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:24px 20px 22px;
+  position:relative;overflow:hidden;
+}
+.unlock-card::before{
+  content:'';position:absolute;width:240px;height:240px;
+  top:-100px;right:-70px;border-radius:50%;
+  background:radial-gradient(circle,rgba(124,58,237,.1) 0%,transparent 70%);
+  pointer-events:none;
+}
+.unlock-card::after{
+  content:'';position:absolute;width:160px;height:160px;
+  bottom:-60px;left:-40px;border-radius:50%;
+  background:radial-gradient(circle,rgba(168,85,247,.07) 0%,transparent 70%);
+  pointer-events:none;
+}
 
-.close-card{margin:0 12px 10px;}
-.btn-close-app{width:100%;padding:14px;background:var(--card);border:1.5px solid var(--border);border-radius:13px;color:var(--text);font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 2px 12px rgba(0,0,0,0.07);}
-.btn-close-app:active{background:var(--border);}
+/* progress pips */
+.pip-row{display:flex;gap:5px;margin-bottom:22px;position:relative;z-index:1;}
+.pip{
+  flex:1;height:5px;border-radius:3px;
+  background:rgba(255,255,255,.06);
+  transition:background .3s,box-shadow .3s;
+  position:relative;overflow:hidden;
+}
+.pip.done{
+  background:var(--green);
+  box-shadow:0 0 8px rgba(16,185,129,.4);
+}
+.pip.active{
+  background:linear-gradient(90deg,var(--acc),var(--acc2));
+  box-shadow:0 0 10px var(--acc-glow);
+}
+.pip.active::after{
+  content:'';position:absolute;top:0;left:-100%;
+  width:50%;height:100%;
+  background:rgba(255,255,255,.4);
+  animation:pipsh 1.4s ease-in-out infinite;
+}
+@keyframes pipsh{0%{left:-100%;}100%{left:200%;}}
 
-/* default video player — full width, native controls */
-#playerScreen{display:none;padding-bottom:30px;}
-#mainVideo{width:100%;display:block;background:#000;}
+/* icon */
+.u-icon{
+  width:68px;height:68px;border-radius:19px;
+  background:linear-gradient(135deg,var(--acc),var(--acc2));
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 18px;font-size:30px;
+  box-shadow:0 12px 32px rgba(124,58,237,.38);
+  position:relative;z-index:1;
+  transition:transform .25s ease,box-shadow .25s ease;
+}
+.u-icon.bounce{animation:ibounce .45s ease;}
+@keyframes ibounce{
+  0%{transform:scale(1);}
+  35%{transform:scale(1.22) rotate(-8deg);}
+  65%{transform:scale(.92) rotate(5deg);}
+  100%{transform:scale(1);}
+}
+.u-title{font-size:19px;font-weight:800;text-align:center;margin-bottom:7px;position:relative;z-index:1;}
+.u-sub{font-size:13px;color:var(--sub);text-align:center;line-height:1.6;margin-bottom:22px;position:relative;z-index:1;}
+
+/* status */
+.status-badge{
+  display:none;
+  align-items:center;justify-content:center;gap:7px;
+  border-radius:13px;padding:12px 16px;
+  font-size:13px;font-weight:600;margin-bottom:16px;
+  position:relative;z-index:1;
+}
+.status-badge.success{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.22);color:var(--green);}
+.status-badge.error{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.22);color:var(--red);}
+.status-badge.show{display:flex;}
+
+/* UNLOCK BUTTON */
+.btn-unlock{
+  position:relative;overflow:hidden;
+  width:100%;padding:17px 20px;
+  background:linear-gradient(130deg,var(--acc) 0%,var(--acc2) 100%);
+  border:none;border-radius:15px;color:#fff;
+  font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  box-shadow:0 10px 32px rgba(124,58,237,.45);
+  transition:transform .1s ease,box-shadow .15s ease;
+  -webkit-appearance:none;letter-spacing:.15px;
+  position:relative;z-index:1;
+}
+/* shimmer sweep */
+.btn-unlock::before{
+  content:'';position:absolute;top:0;left:-80%;
+  width:45%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.16),transparent);
+  transform:skewX(-22deg);
+  animation:bsh 3s ease-in-out infinite 1.5s;pointer-events:none;
+}
+@keyframes bsh{0%{left:-80%;}100%{left:160%;}}
+.btn-unlock:active:not(:disabled){
+  transform:scale(0.965);
+  box-shadow:0 4px 14px rgba(124,58,237,.3);
+}
+.btn-unlock:disabled{opacity:.35;cursor:not-allowed;transform:none !important;box-shadow:none !important;}
+.btn-unlock .b-icon{flex-shrink:0;}
+/* ripple */
+.rpl{
+  position:absolute;border-radius:50%;
+  background:rgba(255,255,255,.28);
+  transform:scale(0);
+  animation:rplanim .55s ease-out forwards;
+  pointer-events:none;
+}
+@keyframes rplanim{to{transform:scale(4);opacity:0;}}
+
+/* CLOSE BTN */
+.close-wrap{margin:0 14px 10px;}
+.btn-close{
+  width:100%;padding:14px;background:transparent;
+  border:1px solid var(--border);border-radius:15px;
+  color:var(--muted);font-size:14px;font-weight:600;
+  font-family:inherit;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:background .15s,color .15s,border-color .15s;
+}
+.btn-close:active{background:rgba(255,255,255,.04);color:var(--sub);border-color:var(--border2);}
+
+/* ── PLAYER ───────────────────────────────────────────── */
+#playerScreen{
+  display:none;position:fixed;inset:0;z-index:500;
+  background:#000;
+  align-items:center;justify-content:center;
+  animation:pfade .3s ease;
+}
+@keyframes pfade{from{opacity:0;}to{opacity:1;}}
+#mainVideo{
+  width:100%;height:100%;
+  object-fit:contain;display:block;
+  outline:none;
+}
+/* back button */
+.p-back{
+  position:absolute;
+  top:calc(16px + env(safe-area-inset-top,0px));
+  left:16px;
+  width:42px;height:42px;
+  background:rgba(0,0,0,.52);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:50%;cursor:pointer;z-index:501;
+  display:flex;align-items:center;justify-content:center;
+  transition:opacity .3s,background .2s;
+  opacity:0;
+}
+#playerScreen:hover .p-back{opacity:1;}
+.p-back svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2.5;}
+/* mobile: show on touch */
+.p-back.visible{opacity:1;}
 </style>
 </head>
 <body>
 
+<!-- LOADING -->
 <div id="loadingScreen">
-  <div class="loader-ring"></div>
-  <div class="loader-text">Loading...</div>
+  <div class="ld-logo">
+    <svg viewBox="0 0 24 24"><polygon points="6,3 20,12 6,21"/></svg>
+  </div>
+  <div class="ld-bar-wrap"><div class="ld-bar"></div></div>
+  <div class="ld-txt">Loading video…</div>
 </div>
 
-<div id="errorScreen">
-  <div class="error-emoji">⚠️</div>
-  <div class="error-title">Video Not Found</div>
-  <div class="error-sub">This link is invalid or the video has been removed.</div>
+<!-- ERROR -->
+<div id="errorScreen" style="display:none;">
+  <div class="er-icon">🎬</div>
+  <div class="er-title">Video Not Found</div>
+  <div class="er-sub">This link has expired or the video was removed.</div>
 </div>
 
+<!-- MAIN SCREEN -->
 <div id="mainScreen">
 
-  <div class="thumb-wrap">
-    <img id="thumbImg" src="" alt="">
-    <div class="thumb-overlay"></div>
-    <div class="play-btn-overlay">
-      <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
-    </div>
-    <div class="duration-pill">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-      <span id="durationPill">0:00</span>
+  <!-- THUMBNAIL -->
+  <div class="thumb-shell">
+    <div class="thumb-wrap">
+      <img id="thumbImg" src="" alt="Thumbnail">
+      <div class="thumb-vig"></div>
+      <div class="play-center">
+        <div class="play-disc">
+          <svg viewBox="0 0 24 24"><polygon points="6,3 20,12 6,21"/></svg>
+        </div>
+      </div>
+      <div class="dur-pill" id="durationPill">—</div>
     </div>
   </div>
 
+  <!-- INFO -->
   <div class="info-card">
-    <div class="video-title" id="videoTitle">Loading...</div>
+    <div class="vid-title" id="videoTitle">Loading…</div>
     <div class="meta-row">
       <div class="meta-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
         <span id="viewsText">—</span>
       </div>
       <div class="meta-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         <span id="durationMeta">—</span>
       </div>
     </div>
   </div>
 
+  <!-- UNLOCK CARD -->
   <div class="unlock-card" id="unlockSection">
-    <div class="unlock-steps" id="stepDots"></div>
-    <div class="unlock-icon" id="unlockIcon">🔐</div>
-    <div class="unlock-title" id="unlockTitle">Unlock to Watch</div>
-    <div class="unlock-sub" id="unlockSub">Tap the button 10 times to unlock the video for free.</div>
+    <div class="pip-row" id="pipRow"></div>
+    <div class="u-icon" id="unlockIcon">🔐</div>
+    <div class="u-title" id="unlockTitle">Unlock to Watch</div>
+    <div class="u-sub" id="unlockSub">Tap the button 10 times to unlock the video for free.</div>
     <div class="status-badge" id="statusBadge"><span id="statusText"></span></div>
     <button class="btn-unlock" id="unlockBtn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18">
-        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+      <svg class="b-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20">
+        <rect x="3" y="11" width="18" height="11" rx="2"/>
         <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
       </svg>
       <span id="unlockBtnText">Tap 1 of 10</span>
     </button>
   </div>
 
-  <div class="close-card">
-    <button class="btn-close-app" onclick="window.close()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18">
+  <div class="close-wrap">
+    <button class="btn-close" onclick="window.close()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="15" height="15">
         <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
       </svg>
       Close
@@ -127,16 +357,21 @@ body{font-family:-apple-system,'SF Pro Display','Segoe UI',sans-serif;background
   </div>
 </div>
 
-<!-- DEFAULT NATIVE PLAYER -->
+<!-- PLAYER — full screen overlay -->
 <div id="playerScreen">
-  <video id="mainVideo" controls playsinline preload="auto"></video>
+  <video id="mainVideo" controls playsinline preload="auto"
+         controlsList="nodownload nofullscreen" disablePictureInPicture
+         oncontextmenu="return false"></video>
+  <button class="p-back" id="pBackBtn">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>
 </div>
 
 <script>
 const API_BASE = "https://checking-g169.onrender.com";
-const TOTAL    = 10;
+const TOTAL = 10;
 
-/* ═══ AD LINKS ═══ */
+/* ── AD POOL ─────────────────────────────── */
 const _ADS = [
   "https://www.profitablecpmratenetwork.com/qz84e0h8y?key=2029482c6ef0c2147c966281ae64d915",
   "https://www.profitablecpmratenetwork.com/hzm7yr4w3x?key=caecfa9ec112acd23158b9e50631e07d",
@@ -151,31 +386,31 @@ const _ADS = [
 ];
 const _adsterra = _ADS.filter(l => l.includes('profitablecpmratenetwork'));
 const _monetag  = _ADS.filter(l => l.includes('omg10'));
-let _adPool = [];
+let _pool = [];
 function _refill() {
   const w = [..._adsterra, ..._adsterra, ..._monetag];
-  for (let i = w.length-1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [w[i],w[j]]=[w[j],w[i]]; }
-  _adPool = w;
+  for (let i = w.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [w[i], w[j]] = [w[j], w[i]];
+  }
+  _pool = w;
 }
 _refill();
-function nextAd() { if (!_adPool.length) _refill(); return _adPool.pop(); }
+function nextAd() { if (!_pool.length) _refill(); return _pool.pop(); }
 
-/* ═══ STORAGE ═══ */
+/* ── STORAGE ─────────────────────────────── */
 let _mem = {};
-function lsGet(k,fb){try{const v=localStorage.getItem(k);return v===null?fb:v;}catch{return k in _mem?_mem[k]:fb;}}
-function lsSet(k,v){try{localStorage.setItem(k,v);}catch{_mem[k]=v;}}
+function lsGet(k, fb) { try { const v = localStorage.getItem(k); return v === null ? fb : v; } catch { return k in _mem ? _mem[k] : fb; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); } catch { _mem[k] = v; } }
 
-/* ═══ STATE ═══ */
-let videoId = null;
-let taps    = 0;
-let _busy   = false;
+/* ── STATE ─────────────────────────────── */
+let videoId = null, taps = 0, _busy = false;
 
-/* ═══ INIT ═══ */
+/* ── INIT ─────────────────────────────── */
 window.addEventListener('load', async () => {
   const p = new URLSearchParams(window.location.search);
   videoId = p.get('startapp') || p.get('id') || null;
   if (!videoId) { showError(); return; }
-
   taps = parseInt(lsGet('taps_' + videoId, '0')) || 0;
   await loadVideo();
 });
@@ -185,91 +420,109 @@ async function loadVideo() {
     const r = await fetch(`${API_BASE}/api/video?id=${videoId}`);
     if (!r.ok) throw 0;
     const d = await r.json();
-    document.getElementById('thumbImg').src             = d.thumbnail || '';
-    document.getElementById('videoTitle').textContent   = d.title     || 'Untitled';
-    document.getElementById('durationPill').textContent = d.duration  || '—';
-    document.getElementById('durationMeta').textContent = d.duration  || '—';
-    document.getElementById('viewsText').textContent    = d.views ? d.views + ' views' : '—';
-    document.getElementById('mainScreen').style.display = 'block';
+
+    document.getElementById('thumbImg').src            = d.thumbnail || '';
+    document.getElementById('videoTitle').textContent  = d.title     || 'Untitled';
+    document.getElementById('durationPill').textContent= d.duration  || '—';
+    document.getElementById('durationMeta').textContent= d.duration  || '—';
+    document.getElementById('viewsText').textContent   = d.views ? fmtViews(d.views) : '—';
 
     if (taps >= TOTAL) {
-      renderDots();
-      hideLoading();
-      fetchAndPlay();
-      return;
+      renderPips(); hideLoading();
+      fetchAndPlay(); return;
     }
-
-    renderDots();
-    updateBtn();
+    renderPips(); updateBtn();
+    document.getElementById('mainScreen').style.display = 'block';
     hideLoading();
   } catch { showError(); }
 }
 
-/* ═══ UI ═══ */
-function renderDots() {
-  const row = document.getElementById('stepDots');
+function fmtViews(n) {
+  const num = parseInt(n);
+  if (isNaN(num)) return n + ' views';
+  if (num >= 1e6)  return (num / 1e6).toFixed(1) + 'M views';
+  if (num >= 1000) return (num / 1000).toFixed(1) + 'K views';
+  return num + ' views';
+}
+
+/* ── PIPS ─────────────────────────────── */
+function renderPips() {
+  const row = document.getElementById('pipRow');
   row.innerHTML = '';
   for (let i = 1; i <= TOTAL; i++) {
-    const d = document.createElement('div');
-    d.className = 'step-dot' + (i <= taps ? ' done' : i === taps+1 ? ' active' : '');
-    row.appendChild(d);
+    const el = document.createElement('div');
+    el.className = 'pip' + (i <= taps ? ' done' : (i === taps + 1 ? ' active' : ''));
+    row.appendChild(el);
   }
 }
+
 function updateBtn() {
-  document.getElementById('unlockIcon').textContent    = taps > 0 ? '🔓' : '🔐';
-  document.getElementById('unlockTitle').textContent   = taps > 0 ? `Step ${taps+1} of ${TOTAL}` : 'Unlock to Watch';
-  document.getElementById('unlockSub').textContent     = taps > 0
-    ? `${TOTAL-taps} more tap${TOTAL-taps>1?'s':''} remaining.`
+  document.getElementById('unlockIcon').textContent   = taps > 0 ? '🔓' : '🔐';
+  document.getElementById('unlockTitle').textContent  = taps > 0 ? `Step ${taps} of ${TOTAL}` : 'Unlock to Watch';
+  document.getElementById('unlockSub').textContent    = taps > 0
+    ? `${TOTAL - taps} more tap${TOTAL - taps > 1 ? 's' : ''} remaining to unlock this video.`
     : `Tap the button ${TOTAL} times to unlock the video for free.`;
-  document.getElementById('unlockBtnText').textContent = `Tap ${taps+1} of ${TOTAL}`;
-  document.getElementById('unlockBtn').disabled        = false;
+  document.getElementById('unlockBtnText').textContent = `Tap ${taps + 1} of ${TOTAL}`;
+  document.getElementById('unlockBtn').disabled = false;
 }
+
 function showStatus(type, msg) {
   const el = document.getElementById('statusBadge');
-  el.className = 'status-badge ' + type;
+  el.className = 'status-badge show ' + type;
   document.getElementById('statusText').textContent = msg;
-  el.style.display = 'flex';
 }
 
-/* ═══ UNLOCK — lock-page exact pattern ═══ */
-document.getElementById('unlockBtn').onclick = function () {
+/* ── UNLOCK BUTTON ─────────────────────────────── */
+document.getElementById('unlockBtn').addEventListener('click', function (e) {
   if (_busy) return;
-  _busy = true;
 
+  /* ripple effect */
+  const rect = this.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height);
+  const x = (e.clientX || rect.left + rect.width / 2) - rect.left - size / 2;
+  const y = (e.clientY || rect.top + rect.height / 2) - rect.top - size / 2;
+  const rpl = document.createElement('span');
+  rpl.className = 'rpl';
+  rpl.style.cssText = `width:${size}px;height:${size}px;left:${x}px;top:${y}px;`;
+  this.appendChild(rpl);
+  setTimeout(() => rpl.remove(), 600);
+
+  /* icon bounce */
+  const icon = document.getElementById('unlockIcon');
+  icon.classList.remove('bounce');
+  void icon.offsetWidth;
+  icon.classList.add('bounce');
+
+  _busy = true;
   taps++;
   lsSet('taps_' + videoId, taps);
-  renderDots();
+  renderPips();
 
   if (taps < TOTAL) {
-    // taps 1–9: new tab + current tab → ad
     window.open(location.href, '_blank');
-    setTimeout(() => {
-      _busy = false;
-      location.href = nextAd();
-    }, 15);
+    setTimeout(() => { _busy = false; location.href = nextAd(); }, 15);
   } else {
-    // tap 10: no ad — straight to video
     this.disabled = true;
     document.getElementById('unlockIcon').textContent  = '🎬';
     document.getElementById('unlockTitle').textContent = 'Access Granted!';
-    document.getElementById('unlockSub').textContent   = 'Your video is loading...';
-    document.getElementById('unlockBtn').style.display = 'none';
-    showStatus('success', '🎉 Unlocked! Loading video...');
-    setTimeout(() => { _busy = false; fetchAndPlay(); }, 300);
+    document.getElementById('unlockSub').textContent   = 'Your video is loading…';
+    this.style.display = 'none';
+    showStatus('success', '🎉 Unlocked! Loading your video…');
+    setTimeout(() => { _busy = false; fetchAndPlay(); }, 350);
   }
-};
+});
 
-/* ═══ FETCH & PLAY ═══ */
+/* ── FETCH & PLAY ─────────────────────────────── */
 async function fetchAndPlay() {
   document.getElementById('unlockBtn').style.display  = 'none';
   document.getElementById('unlockIcon').textContent   = '🎬';
   document.getElementById('unlockTitle').textContent  = 'Access Granted!';
-  document.getElementById('unlockSub').textContent    = 'Your video is loading...';
-  showStatus('success', '🎬 Loading video...');
+  document.getElementById('unlockSub').textContent    = 'Your video is loading…';
+  showStatus('success', '🎬 Loading video…');
   try {
     const r = await fetch(`${API_BASE}/api/unlock`, {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ videoId })
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ videoId })
     });
     if (!r.ok) throw 0;
     const d = await r.json();
@@ -278,24 +531,58 @@ async function fetchAndPlay() {
     openPlayer(d.playbackUrl);
   } catch {
     showStatus('error', '❌ Failed to load. Tap to retry.');
-    document.getElementById('statusBadge').style.cursor = 'pointer';
-    document.getElementById('statusBadge').onclick = fetchAndPlay;
+    const badge = document.getElementById('statusBadge');
+    badge.style.cursor = 'pointer';
+    badge.onclick = fetchAndPlay;
   }
 }
 
-/* ═══ PLAYER — native default ═══ */
+/* ── PLAYER ─────────────────────────────── */
 function openPlayer(url) {
   const v = document.getElementById('mainVideo');
   v.src = url;
-  // hide unlock section, show player below the info card
-  document.getElementById('unlockSection').style.display = 'none';
-  document.getElementById('playerScreen').style.display  = 'block';
+
+  document.getElementById('mainScreen').style.display = 'none';
+  const ps = document.getElementById('playerScreen');
+  ps.style.display = 'flex';
+
+  /* try native fullscreen */
+  try {
+    if (ps.requestFullscreen)       ps.requestFullscreen();
+    else if (ps.webkitRequestFullscreen) ps.webkitRequestFullscreen();
+  } catch(_) {}
+
   v.play().catch(() => {});
 }
 
-function fmt(s){if(!s||isNaN(s))return '0:00';const m=Math.floor(s/60),sec=Math.floor(s%60);return m+':'+(sec<10?'0':'')+sec;}
-function hideLoading(){const el=document.getElementById('loadingScreen');el.style.opacity='0';setTimeout(()=>el.style.display='none',300);}
-function showError(){document.getElementById('loadingScreen').style.display='none';document.getElementById('errorScreen').style.display='block';}
+/* back button */
+document.getElementById('pBackBtn').addEventListener('click', () => {
+  const v = document.getElementById('mainVideo');
+  v.pause(); v.src = '';
+  try { if (document.fullscreenElement) document.exitFullscreen(); } catch(_) {}
+  document.getElementById('playerScreen').style.display = 'none';
+  document.getElementById('mainScreen').style.display = 'block';
+});
+
+/* show back btn on touch (mobile) */
+let _hideTimer;
+document.getElementById('playerScreen').addEventListener('touchstart', function() {
+  const btn = document.getElementById('pBackBtn');
+  btn.classList.add('visible');
+  clearTimeout(_hideTimer);
+  _hideTimer = setTimeout(() => btn.classList.remove('visible'), 3200);
+}, { passive: true });
+
+/* ── HELPERS ─────────────────────────────── */
+function hideLoading() {
+  const el = document.getElementById('loadingScreen');
+  el.style.opacity = '0';
+  setTimeout(() => el.style.display = 'none', 520);
+}
+function showError() {
+  document.getElementById('loadingScreen').style.display = 'none';
+  document.getElementById('errorScreen').style.display = 'flex';
+}
 </script>
 </body>
 </html>
